@@ -88,6 +88,14 @@ function getRandomInt(min, max) {
 }
 
 
+function initializePixelGrid(height) {
+    var pixelGrid = [];
+    for(var y = 0; y < height; y++) {
+        pixelGrid[y] = [];
+    }
+    return pixelGrid;
+}
+
 class RGBA {
     constructor(redValue, greenValue, blueValue, alphaValue) {
         this.red = redValue;
@@ -97,13 +105,68 @@ class RGBA {
     }
 }
 
+class ImageModel {
+    constructor(heightValue, widthValue, pixelGridValue) {
+        this.height = heightValue;
+        this.width = widthValue;
 
-// class definitions here
+        if (pixelGridValue) {
+            this.pixelGrid = pixelGridValue;
+        }
+        else {
+            this.pixelGrid = initializePixelGrid(heightValue);
+        }
+    }
+}
 
-$(document).ready(function() {
+function grayscale(imageModel) {
+
+    var grayscaleImageModel = new ImageModel(imageModel.height, imageModel.width);
+
+    for (var y = 0; y < imageModel.height; y++) {
+        for (var x = 0; x < imageModel.width; x++) {
+            var rgba = imageModel.pixelGrid[y][x];
+            var average = (rgba.red + rgba.green + rgba.blue) / 3;
+            grayscaleImageModel.pixelGrid[y][x] = new RGBA(average, average, average, rgba.alpha);
+        }
+    }
+    return grayscaleImageModel;
+}
+
+
+function verticalMirror(imageModel) {
+
+    var mirrorImageModel = new ImageModel(imageModel.height, imageModel.width);
+
+    for (var y = 0; y < imageModel.height; y++) {
+        for (var x = 0; x < imageModel.width /2; x++) {
+            var mirroredIndex = imageModel.width - 1 - x;
+            mirrorImageModel.pixelGrid[y][x] = imageModel.pixelGrid[y][mirroredIndex];
+            mirrorImageModel.pixelGrid[y][mirroredIndex] = imageModel.pixelGrid[y][x]
+        }
+    }
+
+    return mirrorImageModel;
+}
+
+function horizontalMirror(imageModel) {
+    var horizontalImageModel = new ImageModel(imageModel.height, imageModel.width);
+
+    for (var y = 0; y < imageModel.height / 2; y++) {
+        var mirroredIndex = imageModel.height - 1 - y;
+        for (var x = 0; x < imageModel.width; x++) {
+            horizontalImageModel.pixelGrid[y][x] = imageModel.pixelGrid[mirroredIndex][x];
+            horizontalImageModel.pixelGrid[mirroredIndex][x] = imageModel.pixelGrid[y][x];
+        }
+    }
+
+    return horizontalImageModel;
+}
+
+$('#first').ready(function() {
     var img = new Image();
-    img.src = "img/cat.jpg";
+    img.src = "img/wee.jpg";
 
-
-
+    var cat = ImageUtils.fromImgSrc("img/wee.jpg");
+    ImageUtils.drawImageModel(grayscale(verticalMirror(cat)));
 });
